@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os 
+import sys
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read('trainer/trainer.yml')

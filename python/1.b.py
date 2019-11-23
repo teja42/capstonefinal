@@ -1,5 +1,6 @@
 import cv2
 import os
+import sys
 
 face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
