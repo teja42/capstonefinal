@@ -9,8 +9,8 @@
             importing a video with the person's face clearly visible in it.
          </div>
          <div class="section-action">
-            <button @click="ImportViaCamera" class="btn">Use camera</button>
-            <button @click="ImportViaVideo" class="btn">Use video</button>
+            <button v-promise-btn @click="ImportViaCamera" class="btn">Use camera</button>
+            <button v-promise-btn @click="ImportViaVideo" class="btn">Use video</button>
          </div>
       </div>
 
@@ -20,20 +20,20 @@
             Start training the machine learning alogrithm to detect imported faces.
          </div>
          <div class="section-action">
-            <button @click="Train" class="btn">Start Training</button>
+            <button v-promise-btn @click="Train" class="btn">Start Training</button>
          </div>
       </div>
 
       <div class="section">
          <div class="section-title">3. Detect faces</div>
          <div class="section-description">
-            Once the training has been completed you can start to detect faces. 
+            Once the training has been completed you can start detecting faces. 
             You can detect faces from a video, image or directly from the camera feed.
          </div>
          <div class="section-action">
             <button @click="Detect('video')" class="btn">From video</button>
             <button @click="Detect('image')" class="btn">From Image</button>
-            <button @click="Detect('camera')" class="btn">From Camera</button>
+            <button v-promise-btn @click="Detect('camera')" class="btn">From Camera</button>
          </div>
       </div>
 
@@ -41,19 +41,64 @@
 </template>
 
 <script>
+
 export default {
    name: "Home",
    methods: {
+      spawnProcess(cmd){
+         return new Promise((resolve,reject) => {
+            let cwd = BASE_DIR + "/python";
+            childProcess.exec(cmd,{
+               windowsHide: true,
+               cwd
+            }, (err, stdout, stderr)=>{
+               if(err || stderr){
+                  alert("An error occured!");
+                  console.log(err,stderr);
+                  reject();
+               } else resolve();
+            })
+         });
+      },
       ImportViaCamera(){
-
+         return new Promise((resolve) => {
+            let cmd = `python 1.c.py 1`;
+            this.spawnProcess(cmd)
+            .then(resolve)
+            .catch(resolve);
+         });
       },
       ImportViaVideo(){
+         return new Promise(resolve => {
+            let files = electron.remote.dialog.showOpenDialog(electron.remote.getCurrentWindow(), {
+               title: "Select a video file",
+               properties: ['openFile']
+            });
+            
+            if(!files[0]){
+               alert("No file selected!");
+               return resolve();
+            }
 
+            this.spawnProcess(`python 1.b.py 2 ${files[0]}`)
+            .then(resolve)
+            .catch(()=>{
+               alert("An error occured");
+               resolve();
+            });
+
+         });
       },
       Train(){
-
+         return this.spawnProcess('python 2.py')
       },
       Detect(from){
+         let cmd = "python ";
+         if(from=="camera") {
+            cmd += "3.c.py ";
+         }
+
+         return this.spawnProcess(cmd)
 
       }
    }

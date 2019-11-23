@@ -1,7 +1,11 @@
 import Vue from 'vue'
 import Home from '../components/Home'
 import VueRouter from "vue-router"
+import VuePromiseBtn from 'vue-promise-btn'
 
+import 'vue-promise-btn/dist/vue-promise-btn.css'
+ 
+Vue.use(VuePromiseBtn)
 Vue.use(VueRouter)
 
 const routes = [

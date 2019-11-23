@@ -9,7 +9,7 @@ if not sys.argv[1]:
 
 face_id = sys.argv[1]
 
-a=input('Enter the path : ')
+a=sys.argv[2]
 cam = cv2.VideoCapture(a)
 
 if (cam.isOpened()== False): 
