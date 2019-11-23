@@ -3,7 +3,10 @@ import os
 
 face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-face_id = input('\n enter user id end press <return> ==>  ')
+if not sys.argv[1]:
+    exit(1)
+
+face_id = sys.argv[1]
 
 a=input('Enter the path : ')
 cam = cv2.VideoCapture(a)

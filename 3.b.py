@@ -15,7 +15,10 @@ cam.set(4, 480)
 minW = 0.1*cam.get(3)
 minH = 0.1*cam.get(4)
 
-a=input('Enter the path : ')
+if not sys.argv[1]:
+    exit(1)
+
+a = sys.argv[1]
 cam = cv2.VideoCapture(a)
  
 if (cam.isOpened()== False): 

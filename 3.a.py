@@ -8,7 +8,10 @@ faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
-i=input('Enter the path : ')
+if not sys.argv[1]:
+    exit(1)
+
+i=sys.argv[1]
 
 img=cv2.imread(i)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
