@@ -1,6 +1,20 @@
 <template>
    <div id="home">
 
+      <div id="details-modal" v-show="showModal">
+         <div id="modal-contents">
+            <h3> Details of the person</h3>
+
+            <input type="text" placeholder="Full Name" v-model="person.name" />
+            <input type="date" placeholder="Date of Birth" v-model="person.dob" />
+            <input type="text" placeholder="Height" v-model="person.height" />
+            <textarea type="text" placeholder="Other identifying information" v-model="person.others" />
+
+            <button @click="ProceedWithDetails" class="btn">Proceed</button>
+            <button @click="CloseModal" class="btn">Cancel</button>
+         </div>
+      </div>
+
       <div class="section">
          <div class="section-title">1. Get input faces</div>
          <div class="section-description">
@@ -9,8 +23,8 @@
             importing a video with the person's face clearly visible in it.
          </div>
          <div class="section-action">
-            <button v-promise-btn @click="ImportViaCamera" class="btn">Use camera</button>
-            <button v-promise-btn @click="ImportViaVideo" class="btn">Use video</button>
+            <button v-promise-btn @click="GetFaces('camera')" class="btn">Use camera</button>
+            <button v-promise-btn @click="GetFaces('video')" class="btn">Use video</button>
          </div>
       </div>
 
@@ -44,6 +58,18 @@
 
 export default {
    name: "Home",
+      data(){
+      return {
+         person: {
+            name: "",
+            dob: "",
+            height: "",
+            others: ""
+         },
+         showModal: false,
+         from: "camera"
+      }
+   },
    methods: {
       spawnProcess(cmd){
          return new Promise((resolve,reject) => {
@@ -60,27 +86,52 @@ export default {
             })
          });
       },
-      ImportViaCamera(){
+      GetFaces(from){
+         this.showModal = true;
+         this.from = from;
+      },
+      ProceedWithDetails(){
+         let {person, from} = this;
+         if(!person.name || !person.dob || !person.height) {
+            return alert("Required fields are invalid");
+         }
+         let id = Date.now();
+         fs.appendFile(
+            `${BASE_DIR}/python/details.csv`,
+            `\n${id},${person.name},${person.dob},${person.height},${person.others}`,
+            (err) => {
+               if(err) {
+                  alert("An error occured while trying to write details to disk");
+               }
+               this.CloseModal();
+               if(from=="camera"){
+                  this.ImportViaCamera(id);
+               } else {
+                  this.ImportViaVideo(id);
+               }
+            }
+         )
+      },
+      CloseModal(){
+         this.showModal = false;
+      },
+      ImportViaCamera(id){
          return new Promise((resolve) => {
-            let cmd = `python 1.c.py 1`;
+            let cmd = `python 1.c.py ${id}`;
             this.spawnProcess(cmd)
             .then(resolve)
             .catch(resolve);
          });
       },
-      ImportViaVideo(){
+      ImportViaVideo(id){
          return new Promise(resolve => {
-            let files = electron.remote.dialog.showOpenDialog(electron.remote.getCurrentWindow(), {
-               title: "Select a video file",
-               properties: ['openFile']
-            });
-            
-            if(!files[0]){
+            let file = this.promptForFile("Select a video file");
+            if(!file){
                alert("No file selected!");
                return resolve();
             }
 
-            this.spawnProcess(`python 1.b.py 2 ${files[0]}`)
+            this.spawnProcess(`python 1.b.py ${id} ${file}`)
             .then(resolve)
             .catch(()=>{
                alert("An error occured");
@@ -89,6 +140,18 @@ export default {
 
          });
       },
+      promptForFile(title){
+         let files = electron.remote.dialog.showOpenDialog(
+            electron.remote.getCurrentWindow(), {
+               title: title,
+               properties: ['openFile']
+         });
+         if(typeof files == 'undefined') return "";
+         if(!files[0]) return "";
+
+         return files[0];
+
+      },
       Train(){
          return this.spawnProcess('python 2.py')
       },
@@ -96,6 +159,20 @@ export default {
          let cmd = "python ";
          if(from=="camera") {
             cmd += "3.c.py ";
+         } else if (from == "image"){
+            let file = this.promptForFile("Select an image");
+            if(!file){
+               alert("No file selected!");
+               return new Promise.resolve();
+            }
+            cmd += `3.a.py ${file}`;
+         } else {
+            let file = this.promptForFile("Select a video");
+            if(!file){
+               alert("No file selected!");
+               return new Promise.resolve();
+            }
+            cmd += `3.b.py ${file}`;
          }
 
          return this.spawnProcess(cmd)
@@ -115,8 +192,28 @@ export default {
 .section {
    padding: 5px 10px;
    border-left: 5px solid blueviolet;
-   background-color: rgb(241, 241, 241);
-   margin: 20px 20px;
+   background-color: rgb(245, 245, 245);
+   border-radius: 2px;
+   margin: 30px 20px;
+   box-shadow: 0 1px 25px 1px rgba(0,0,0,0.15);
+}
+
+#details-modal{
+   display: flex;
+   width: 100%;
+   height: 100%;
+   position: fixed;
+   justify-content: center;
+   align-items: center;
+   top: 0;
+   left: 0;
+   background-color: rgba(0,0,0,0.2);
+}
+
+#modal-contents{
+   background-color: white;
+   padding: 5px 20px;
+   border-radius: 10px;
 }
 
 .section-title{
@@ -129,5 +226,29 @@ export default {
    color: rgb(95, 95, 95);
 }
 
-</style>
+.section-input>h3 {
+   font-size: 15px;
+}
 
+input, textarea {
+   display: block;
+   outline: none;
+   padding: 5px;
+   font-size: 14px;
+   border: 0;
+   border-bottom: 2px solid black;
+   min-width: 300px;
+   margin: 10px 0;
+   transition: border-bottom 0.2s;
+}
+
+input:focus, textarea:focus{
+   border-bottom: 2px solid blueviolet;
+}
+
+small{
+   color: grey;
+   font-size: 12px;
+}
+
+</style>
