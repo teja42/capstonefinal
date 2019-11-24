@@ -192,10 +192,9 @@ export default {
 .section {
    padding: 5px 10px;
    border-left: 5px solid blueviolet;
-   background-color: rgb(245, 245, 245);
+   background-color: rgb(244, 246, 255);
    border-radius: 2px;
    margin: 30px 20px;
-   box-shadow: 0 1px 25px 1px rgba(0,0,0,0.15);
 }
 
 #details-modal{
