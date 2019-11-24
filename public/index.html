@@ -39,12 +39,8 @@
     <script>
       const childProcess = require("child_process");
       const electron = require("electron");
-      let BASE_DIR = process.cwd();
+      let BASE_DIR = electron.remote.getGlobal("BASE_DIR");
       const fs = require("fs");
-
-      // Ensure dataset and trainer folder exist
-      fs.mkdir(`${process.cwd()}/python/dataset`,()=>{});
-      fs.mkdir(`${process.cwd()}/python/trainer`,()=>{});
     </script>
     <!-- built files will be auto injected -->
   </body>

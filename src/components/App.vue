@@ -31,6 +31,10 @@ export default {
 		close(){
 			electron.remote.getCurrentWindow().close();
 		}
+	},
+	mounted(){
+      fs.mkdir(`${BASE_DIR}/python/dataset`,()=>{});
+      fs.mkdir(`${BASE_DIR}/python/trainer`,()=>{});
 	}
 }
 </script>
